@@ -9,11 +9,18 @@ class BrowserService {
         // Launch browser with stealth settings
         const browser = await puppeteer.launch({
             headless: config.headless ? "new" : false, 
+            executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
+            dumpio: false, // Set to false to hide browser process logs (like D-Bus errors)
             args: [
                 '--no-sandbox',
                 '--disable-setuid-sandbox',
                 '--disable-dev-shm-usage',
-                '--window-size=1280,800'
+                '--disable-gpu',
+                '--disable-software-rasterizer',
+                '--window-size=1280,800',
+                '--log-level=3', // Silence most Chrome logs (0 = default, 3 = fatal only)
+                '--no-first-run',
+                '--no-zygote'
             ]
         });
         return browser;

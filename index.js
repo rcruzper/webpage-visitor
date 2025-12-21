@@ -3,6 +3,8 @@ const browserService = require('./src/BrowserService');
 const LoginService = require('./src/LoginService');
 
 (async () => {
+    console.log('Starting visitor service...');
+    
     // Validate config
     if (!config.targetUrl || !config.credentials.username || !config.credentials.password) {
         console.error('Missing configuration. Please check your .env file.');
