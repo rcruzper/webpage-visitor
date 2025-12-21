@@ -52,7 +52,8 @@ RUN mkdir -p output && chown -R node:node /app
 USER node
 
 # Variables de entorno por defecto
-ENV HEADLESS=true
+ENV HEADLESS=true \
+    NODE_ENV=production
 
 # Entrypoint para manejo de procesos
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]

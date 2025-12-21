@@ -1,4 +1,7 @@
-require('dotenv').config();
+// Only load .env file if not in production (Docker handles env vars in production)
+if (process.env.NODE_ENV !== 'production') {
+    require('dotenv').config();
+}
 
 module.exports = {
     targetUrl: process.env.TARGET_URL,

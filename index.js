@@ -36,7 +36,7 @@ const LoginService = require('./src/LoginService');
         const timestamp = new Date().toISOString().replace(/T/, '_').replace(/\..+/, '').replace(/:/g, '-');
         const screenshotPath = `output/login_success_${timestamp}.png`;
         
-        await page.screenshot({ path: screenshotPath, fullPage: true });
+        await page.screenshot({ path: screenshotPath });
         console.log(`Screenshot saved to ${screenshotPath}`);
         
         // Here you can add more logic to do after login
