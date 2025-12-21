@@ -27,7 +27,9 @@ services:
       - USERNAME_SELECTOR=
       - PASSWORD_SELECTOR=
       - LOGIN_BUTTON_SELECTOR=
-
+      # Optional: Link to click after login (e.g., 'a#my-link')
+      - POST_LOGIN_LINK_SELECTOR=
+      
       # --- System Options ---
       - HEADLESS=true
       - NODE_ENV=production

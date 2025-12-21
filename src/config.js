@@ -8,7 +8,8 @@ module.exports = {
     selectors: {
         username: process.env.USERNAME_SELECTOR,
         password: process.env.PASSWORD_SELECTOR,
-        loginButton: process.env.LOGIN_BUTTON_SELECTOR
+        loginButton: process.env.LOGIN_BUTTON_SELECTOR,
+        postLoginLink: process.env.POST_LOGIN_LINK_SELECTOR
     },
     credentials: {
         username: process.env.USER_LOGIN,

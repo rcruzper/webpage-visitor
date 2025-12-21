@@ -41,8 +41,8 @@ ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 WORKDIR /app
 
 # Copy dependencies and code from builder stage
-COPY --from=builder /app/node_modules ./
-COPY --from=builder /app/src ./
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/src ./src
 COPY --from=builder /app/index.js ./
 
 # Create output directory and set permissions

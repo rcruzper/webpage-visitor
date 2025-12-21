@@ -1,6 +1,7 @@
 const config = require('./src/config');
 const browserService = require('./src/BrowserService');
 const LoginService = require('./src/LoginService');
+const NavigationService = require('./src/NavigationService');
 const cron = require('node-cron');
 const fs = require('fs');
 
@@ -30,7 +31,12 @@ async function runBot() {
                 console.log('Network did not become fully idle, proceeding anyway...');
             });
 
-            // Deliberate pause
+            // Perform post-login navigation/click
+            const navService = new NavigationService(page, config);
+            await navService.clickTargetLink();
+
+            // Deliberate pause before screenshot (to capture the result of the click)
+            console.log('Waiting for content to load after action...');
             await new Promise(r => setTimeout(r, 3000));
 
             console.log('Taking a screenshot for verification...');
@@ -41,8 +47,6 @@ async function runBot() {
             
             await page.screenshot({ path: screenshotPath });
             console.log(`Screenshot saved to ${screenshotPath}`);
-            
-            // Post-login logic here...
             
             console.log('Routine finished successfully.');
         } else {
