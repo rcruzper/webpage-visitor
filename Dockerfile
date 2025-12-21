@@ -1,46 +1,60 @@
-FROM node:18-alpine
+# ==========================================
+# Stage 1: Builder
+# Instala dependencias de Node.js
+# ==========================================
+FROM node:18-alpine AS builder
 
-# Instalar Chromium y dependencias necesarias para Alpine
-# No necesitamos instalar librerías extrañas, el paquete 'chromium' de Alpine ya trae lo necesario.
+# Evitar descarga de Chromium en esta etapa (ahorra tiempo y ancho de banda)
+ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
+
+WORKDIR /app
+
+# Copiar solo package.json (ignorando lockfile por el tema del registro privado)
+COPY package.json ./
+
+# Instalar solo dependencias de producción
+RUN npm install --omit=dev
+
+# Copiar el código fuente
+COPY . .
+
+# ==========================================
+# Stage 2: Runner
+# Imagen final minimalista para ejecución
+# ==========================================
+FROM node:18-alpine AS runner
+
+# Instalar Chromium y dependencias de sistema (runtime)
 RUN apk add --no-cache \
     chromium \
     nss \
     freetype \
-    freetype-dev \
     harfbuzz \
     ca-certificates \
     ttf-freefont \
     dumb-init
 
-# Configurar variables de entorno CRÍTICAS para Alpine
-# 1. Decirle a Puppeteer que NO descargue su propio Chrome (no funcionaría en Alpine)
+# Configuración de Puppeteer para Alpine
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
-# 2. Decirle a Puppeteer dónde está el Chromium de Alpine
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 
-# Configurar directorio de trabajo
 WORKDIR /app
 
-# Copiar solo package.json
-COPY package.json ./
-
-# Instalar dependencias de Node.js
-RUN npm install
-
-# Copiar el resto del código
-COPY . .
+# Copiar dependencias y código desde el stage 'builder'
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/src ./src
+COPY --from=builder /app/index.js ./
 
 # Crear directorio para outputs y ajustar permisos
 RUN mkdir -p output && chown -R node:node /app
 
-# Cambiar al usuario no-root
+# Seguridad: usar usuario no-root
 USER node
 
-# Variable de entorno para la app
+# Variables de entorno por defecto
 ENV HEADLESS=true
 
-# Usar dumb-init como entrypoint
+# Entrypoint para manejo de procesos
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]
 
-# Comando de inicio
-CMD [ "node", "index.js" ]
+CMD ["node", "index.js"]
