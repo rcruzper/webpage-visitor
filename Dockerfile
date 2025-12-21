@@ -1,30 +1,30 @@
 # ==========================================
 # Stage 1: Builder
-# Instala dependencias de Node.js
+# Install Node.js dependencies
 # ==========================================
 FROM node:18-alpine AS builder
 
-# Evitar descarga de Chromium en esta etapa (ahorra tiempo y ancho de banda)
+# Prevent Chromium download during this stage (saves time and bandwidth)
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 
 WORKDIR /app
 
-# Copiar solo package.json (ignorando lockfile por el tema del registro privado)
+# Copy only package.json (ignoring lockfile due to private registry issues)
 COPY package.json ./
 
-# Instalar solo dependencias de producción
+# Install only production dependencies
 RUN npm install --omit=dev
 
-# Copiar el código fuente
+# Copy source code
 COPY . .
 
 # ==========================================
 # Stage 2: Runner
-# Imagen final minimalista para ejecución
+# Minimal final image for execution
 # ==========================================
 FROM node:18-alpine AS runner
 
-# Instalar Chromium y dependencias de sistema (runtime)
+# Install Chromium and system dependencies (runtime)
 RUN apk add --no-cache \
     chromium \
     nss \
@@ -34,28 +34,28 @@ RUN apk add --no-cache \
     ttf-freefont \
     dumb-init
 
-# Configuración de Puppeteer para Alpine
+# Puppeteer configuration for Alpine
 ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 ENV PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium-browser
 
 WORKDIR /app
 
-# Copiar dependencias y código desde el stage 'builder'
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/src ./src
+# Copy dependencies and code from builder stage
+COPY --from=builder /app/node_modules ./
+COPY --from=builder /app/src ./
 COPY --from=builder /app/index.js ./
 
-# Crear directorio para outputs y ajustar permisos
+# Create output directory and set permissions
 RUN mkdir -p output && chown -R node:node /app
 
-# Seguridad: usar usuario no-root
+# Security: use non-root user
 USER node
 
-# Variables de entorno por defecto
+# Default environment variables
 ENV HEADLESS=true \
     NODE_ENV=production
 
-# Entrypoint para manejo de procesos
+# Entrypoint for process management
 ENTRYPOINT ["/usr/bin/dumb-init", "--"]
 
 CMD ["node", "index.js"]

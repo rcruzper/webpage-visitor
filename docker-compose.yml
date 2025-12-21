@@ -1,0 +1,35 @@
+services:
+  torrent-visitor:
+    build: .
+    image: torrent-visitor:latest
+    container_name: torrent_visitor
+    restart: unless-stopped
+    # We run as the internal 'node' user (UID 1000).
+    # IMPORTANT: Ensure the './output' folder on the host has permissions for UID 1000.
+    # (Example: 'chown 1000:1000 output' on the Linux server)
+
+    volumes:
+      - ./output:/app/output
+
+    environment:
+      # --- Cron Configuration ---
+      # Format: Minute Hour DayOfMonth Month DayOfWeek
+      # Example: "0 8 * * *" = Every day at 08:00 AM
+      # If you comment this line, it will run once and exit.
+      - CRON_SCHEDULE=0 8 * * *
+
+      # --- Bot Configuration ---
+      - TARGET_URL=
+      - USER_LOGIN=
+      - USER_PASSWORD=
+
+      # --- Selectors (Adjust if the website changes) ---
+      - USERNAME_SELECTOR=
+      - PASSWORD_SELECTOR=
+      - LOGIN_BUTTON_SELECTOR=
+
+      # --- System Options ---
+      - HEADLESS=true
+      - NODE_ENV=production
+      # Timezone to ensure the Cron runs at the correct local time
+      - TZ=Europe/Madrid

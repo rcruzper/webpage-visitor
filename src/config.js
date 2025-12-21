@@ -14,5 +14,6 @@ module.exports = {
         username: process.env.USER_LOGIN,
         password: process.env.USER_PASSWORD
     },
-    headless: process.env.HEADLESS === 'true'
+    headless: process.env.HEADLESS === 'true',
+    cronSchedule: process.env.CRON_SCHEDULE
 };
