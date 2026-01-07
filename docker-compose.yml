@@ -1,8 +1,8 @@
 services:
   torrent-visitor:
     build: .
-    image: torrent-visitor:latest
-    container_name: torrent_visitor
+    image: webpage-visitor:latest
+    container_name: webpage_visitor
     restart: unless-stopped
     # We run as the internal 'node' user (UID 1000).
     # IMPORTANT: Ensure the './output' folder on the host has permissions for UID 1000.

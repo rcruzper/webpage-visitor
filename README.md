@@ -43,7 +43,7 @@ You must identify the CSS selectors for the target website elements:
 | Variable | Description | Default |
 |----------|-------------|---------|
 | `HEADLESS` | Run browser without UI (`true`/`false`). | `true` |
-| `TZ` | Timezone for the CRON scheduler. | `Europe/Madrid` |
+| `TZ` | Timezone for the CRON scheduler. | `GMT` |
 
 ---
 
