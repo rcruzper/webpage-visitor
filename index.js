@@ -47,6 +47,29 @@ async function runBot() {
         }
     } catch (error) {
         console.error('An unexpected error occurred:', error);
+        
+        // Attempt to take an error screenshot
+        if (browser) {
+            try {
+                const pages = await browser.pages();
+                const page = pages.length > 0 ? pages[0] : null;
+                
+                if (page) {
+                    console.log('Capturing error state screenshot...');
+                    const errorImageBuffer = await page.screenshot({ encoding: 'binary' });
+                    const timestamp = new Date().toISOString().replace(/T/, '_').replace(/\..+/, '').replace(/:/g, '-');
+                    
+                    await notificationService.sendSnapshot(
+                        errorImageBuffer, 
+                        `error_${timestamp}.png`, 
+                        `Bot FAILED ❌\nReason: ${error.message}`,
+                        '5'
+                    );
+                }
+            } catch (snapshotError) {
+                console.error('Could not capture error screenshot:', snapshotError);
+            }
+        }
     } finally {
         if (browser) {
             console.log('Closing browser...');

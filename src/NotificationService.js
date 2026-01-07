@@ -10,7 +10,7 @@ class NotificationService {
         this.password = config.ntfy.password;
     }
 
-    async sendSnapshot(imageBuffer, filename, message = 'Bot finished successfully') {
+    async sendSnapshot(imageBuffer, filename, message = 'Bot finished successfully', priority = '3') {
         if (!this.serverUrl || !this.topic) {
             console.log('Ntfy is not configured. Skipping notification.');
             return;
@@ -22,7 +22,7 @@ class NotificationService {
         try {
             const headers = {
                 'Title': 'Webpage Visitor Report',
-                'Priority': '3',
+                'Priority': priority,
                 'Tags': 'robot,camera',
                 'Filename': filename,
                 'Message': message
