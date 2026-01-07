@@ -73,7 +73,14 @@ if (config.cronSchedule) {
     }
 
     // Schedule the task
-    cron.schedule(config.cronSchedule, () => {
+    cron.schedule(config.cronSchedule, async () => {
+        // Calculate a random delay between 0 and 5 minutes
+        const delayMs = Math.floor(Math.random() * 5 * 60 * 1000);
+        const delayMinutes = (delayMs / 60000).toFixed(2);
+        
+        console.log(`[${new Date().toISOString()}] Cron triggered. Waiting ${delayMinutes} minutes to randomize execution...`);
+        
+        await new Promise(resolve => setTimeout(resolve, delayMs));
         runBot();
     });
     
