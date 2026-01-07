@@ -10,21 +10,24 @@ class LoginService {
             await this.page.goto(this.config.targetUrl, { waitUntil: 'networkidle2' });
 
             // Wait for selector to be visible
-            await this.page.waitForSelector(this.config.selectors.username, { visible: true });
+            await this.page.waitForSelector(this.config.selectors.username, {
+                visible: true,
+                timeout: this.config.timeouts.selector
+            });
 
             // Type username with delay to simulate human typing
             console.log('Typing username...');
             await this.typeHumanLike(this.config.selectors.username, this.config.credentials.username);
 
             // Small pause
-            await new Promise(r => setTimeout(r, this.getRandomInt(500, 1500)));
+            await new Promise(r => setTimeout(r, this.getRandomInt(this.config.delays.loginPauseMin, this.config.delays.loginPauseMax)));
 
             // Type password
             console.log('Typing password...');
             await this.typeHumanLike(this.config.selectors.password, this.config.credentials.password);
 
             // Small pause
-            await new Promise(r => setTimeout(r, this.getRandomInt(500, 1500)));
+            await new Promise(r => setTimeout(r, this.getRandomInt(this.config.delays.loginPauseMin, this.config.delays.loginPauseMax)));
 
             // Click login button
             console.log('Clicking login button...');
@@ -38,14 +41,16 @@ class LoginService {
 
         } catch (error) {
             console.error('Login failed:', error);
-            return false;
+            throw error;
         }
     }
 
     async typeHumanLike(selector, text) {
         await this.page.focus(selector);
         for (const char of text) {
-            await this.page.keyboard.type(char, { delay: this.getRandomInt(50, 150) });
+            await this.page.keyboard.type(char, {
+                delay: this.getRandomInt(this.config.delays.typingMin, this.config.delays.typingMax)
+            });
         }
     }
 

@@ -21,6 +21,18 @@ module.exports = {
         user: process.env.NTFY_USER,
         password: process.env.NTFY_PASSWORD
     },
+    timeouts: {
+        selector: parseInt(process.env.TIMEOUT_SELECTOR || '10000'), // Specific for post-login link
+        networkIdle: parseInt(process.env.TIMEOUT_NETWORK_IDLE || '5000')
+    },
+    delays: {
+        typingMin: parseInt(process.env.DELAY_TYPING_MIN || '50'),
+        typingMax: parseInt(process.env.DELAY_TYPING_MAX || '150'),
+        loginPauseMin: parseInt(process.env.DELAY_LOGIN_PAUSE_MIN || '500'),
+        loginPauseMax: parseInt(process.env.DELAY_LOGIN_PAUSE_MAX || '1500'),
+        navPauseMin: parseInt(process.env.DELAY_NAV_PAUSE_MIN || '1000'),
+        navPauseMax: parseInt(process.env.DELAY_NAV_PAUSE_MAX || '3000')
+    },
     headless: process.env.HEADLESS === 'true',
     cronSchedule: process.env.CRON_SCHEDULE
 };

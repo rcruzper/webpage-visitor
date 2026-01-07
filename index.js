@@ -21,18 +21,23 @@ async function runBot() {
         const page = await browserService.createPage(browser);
 
         const loginService = new LoginService(page, config);
-        const success = await loginService.performLogin();
+        await loginService.performLogin();
 
-        if (success) {
-            console.log('Login process completed. Proceeding to navigation...');
+        console.log('Login process completed. Proceeding to navigation...');
 
-            // Perform post-login navigation/click
-            const navService = new NavigationService(page, config);
-            await navService.clickTargetLink();
-
-            console.log('Taking a screenshot for verification...');
-
-            const timestamp = new Date().toISOString().replace(/T/, '_').replace(/\..+/, '').replace(/:/g, '-');
+                        // Perform post-login navigation/click
+                        const navService = new NavigationService(page, config);
+                        await navService.clickTargetLink();
+                        
+                        // Wait for content to settle
+                        console.log('Waiting for content to settle before screenshot...');
+                        try {
+                            await page.waitForNetworkIdle({ idleTime: 500, timeout: config.timeouts.networkIdle, concurrency: 2 });
+                        } catch (e) {
+                            console.log('Network busy, proceeding to screenshot anyway...');
+                        }
+                
+                        console.log('Taking a screenshot for verification...');            const timestamp = new Date().toISOString().replace(/T/, '_').replace(/\..+/, '').replace(/:/g, '-');
             const filename = `login_success_${timestamp}.png`;
 
             // Capture screenshot in memory (Buffer)
@@ -42,9 +47,6 @@ async function runBot() {
             await notificationService.sendSnapshot(imageBuffer, filename, 'Login successful. Action performed.');
 
             console.log('Routine finished successfully.');
-        } else {
-            console.error('Login process failed.');
-        }
     } catch (error) {
         console.error('An unexpected error occurred:', error);
         
@@ -79,31 +81,35 @@ async function runBot() {
 }
 
 // Execution entry point
-if (config.cronSchedule) {
-    console.log(`Scheduler activated. Cron expression: "${config.cronSchedule}"`);
+if (require.main === module) {
+    if (config.cronSchedule) {
+        console.log(`Scheduler activated. Cron expression: "${config.cronSchedule}"`);
 
-    // Validate cron expression
-    if (!cron.validate(config.cronSchedule)) {
-        console.error('Invalid CRON_SCHEDULE format. Exiting.');
-        process.exit(1);
+        // Validate cron expression
+        if (!cron.validate(config.cronSchedule)) {
+            console.error('Invalid CRON_SCHEDULE format. Exiting.');
+            process.exit(1);
+        }
+
+        // Schedule the task
+        cron.schedule(config.cronSchedule, async () => {
+            // Calculate a random delay between 0 and 5 minutes
+            const delayMs = Math.floor(Math.random() * 5 * 60 * 1000);
+            const delayMinutes = (delayMs / 60000).toFixed(2);
+
+            console.log(`[${new Date().toISOString()}] Cron triggered. Waiting ${delayMinutes} minutes to randomize execution...`);
+
+            await new Promise(resolve => setTimeout(resolve, delayMs));
+            await runBot();
+            console.log(`[${new Date().toISOString()}] Cycle complete. Waiting for the next scheduled run...`);
+        });
+
+        // Keep the process alive
+    } else {
+        // Run once immediately (legacy mode)
+        console.log('No CRON_SCHEDULE defined. Running once immediately.');
+        runBot();
     }
-
-    // Schedule the task
-    cron.schedule(config.cronSchedule, async () => {
-        // Calculate a random delay between 0 and 5 minutes
-        const delayMs = Math.floor(Math.random() * 5 * 60 * 1000);
-        const delayMinutes = (delayMs / 60000).toFixed(2);
-
-        console.log(`[${new Date().toISOString()}] Cron triggered. Waiting ${delayMinutes} minutes to randomize execution...`);
-
-        await new Promise(resolve => setTimeout(resolve, delayMs));
-        await runBot();
-        console.log(`[${new Date().toISOString()}] Cycle complete. Waiting for the next scheduled run...`);
-    });
-
-    // Keep the process alive
-} else {
-    // Run once immediately (legacy mode)
-    console.log('No CRON_SCHEDULE defined. Running once immediately.');
-    runBot();
 }
+
+module.exports = { runBot };
