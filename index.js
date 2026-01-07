@@ -4,7 +4,6 @@ const LoginService = require('./src/LoginService');
 const NavigationService = require('./src/NavigationService');
 const notificationService = require('./src/NotificationService');
 const cron = require('node-cron');
-const fs = require('fs');
 
 // Main bot logic encapsulated
 async function runBot() {
@@ -41,16 +40,15 @@ async function runBot() {
             await new Promise(r => setTimeout(r, 3000));
 
             console.log('Taking a screenshot for verification...');
-            if (!fs.existsSync('output')) fs.mkdirSync('output');
 
             const timestamp = new Date().toISOString().replace(/T/, '_').replace(/\..+/, '').replace(/:/g, '-');
-            const screenshotPath = `output/login_success_${timestamp}.png`;
+            const filename = `login_success_${timestamp}.png`;
 
-            await page.screenshot({ path: screenshotPath });
-            console.log(`Screenshot saved to ${screenshotPath}`);
+            // Capture screenshot in memory (Buffer)
+            const imageBuffer = await page.screenshot({ encoding: 'binary' });
 
             // Send notification via Ntfy
-            await notificationService.sendSnapshot(screenshotPath, 'Login successful. Action performed.');
+            await notificationService.sendSnapshot(imageBuffer, filename, 'Login successful. Action performed.');
 
             console.log('Routine finished successfully.');
         } else {

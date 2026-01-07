@@ -10,25 +10,21 @@ class NotificationService {
         this.password = config.ntfy.password;
     }
 
-    async sendSnapshot(filePath, message = 'Bot finished successfully') {
+    async sendSnapshot(imageBuffer, filename, message = 'Bot finished successfully') {
         if (!this.serverUrl || !this.topic) {
             console.log('Ntfy is not configured. Skipping notification.');
             return;
         }
 
         const fullUrl = `${this.serverUrl}/${this.topic}`;
-        const fileName = path.basename(filePath);
-
         console.log(`Sending notification to ${fullUrl}...`);
 
         try {
-            const fileStream = fs.createReadStream(filePath);
-
             const headers = {
                 'Title': 'Webpage Visitor Report',
                 'Priority': '3',
                 'Tags': 'robot,camera',
-                'Filename': fileName,
+                'Filename': filename,
                 'Message': message
             };
 
@@ -38,12 +34,11 @@ class NotificationService {
                 headers['Authorization'] = `Basic ${auth}`;
             }
 
-            // In Node 18+, fetch is global. We PUT the file directly.
+            // Send buffer directly
             const response = await fetch(fullUrl, {
                 method: 'PUT',
-                body: fileStream,
-                headers: headers,
-                duplex: 'half' // Required for node-fetch with streams
+                body: imageBuffer,
+                headers: headers
             });
 
             if (response.ok) {

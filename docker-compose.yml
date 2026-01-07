@@ -1,15 +1,10 @@
 services:
-  torrent-visitor:
+  webpage-visitor:
     build: .
     image: webpage-visitor:latest
     container_name: webpage_visitor
     restart: unless-stopped
     # We run as the internal 'node' user (UID 1000).
-    # IMPORTANT: Ensure the './output' folder on the host has permissions for UID 1000.
-    # (Example: 'chown 1000:1000 output' on the Linux server)
-
-    volumes:
-      - ./output:/app/output
 
     environment:
       # --- Cron Configuration ---
