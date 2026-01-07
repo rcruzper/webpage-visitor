@@ -29,9 +29,9 @@ services:
       - LOGIN_BUTTON_SELECTOR=
       # Optional: Link to click after login (e.g., 'a#my-link')
       - POST_LOGIN_LINK_SELECTOR=
-      
+
       # --- System Options ---
       - HEADLESS=true
       - NODE_ENV=production
       # Timezone to ensure the Cron runs at the correct local time
-      - TZ=Europe/Madrid
+      - TZ=GMT
