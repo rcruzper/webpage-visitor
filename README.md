@@ -61,7 +61,7 @@ This project is optimized to run as a container.
 
 3. **Check Logs**:
    ```bash
-   docker logs -f torrent_visitor
+   docker logs -f webpage_visitor
    ```
 
 4. **View Results**:
