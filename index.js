@@ -24,20 +24,11 @@ async function runBot() {
         const success = await loginService.performLogin();
 
         if (success) {
-            console.log('Login process completed. Waiting for page to stabilize...');
-
-            // Wait for network to be idle
-            await page.waitForNavigation({ waitUntil: 'networkidle0', timeout: 30000 }).catch(() => {
-                console.log('Network did not become fully idle, proceeding anyway...');
-            });
+            console.log('Login process completed. Proceeding to navigation...');
 
             // Perform post-login navigation/click
             const navService = new NavigationService(page, config);
             await navService.clickTargetLink();
-
-            // Deliberate pause before screenshot (to capture the result of the click)
-            console.log('Waiting for content to load after action...');
-            await new Promise(r => setTimeout(r, 3000));
 
             console.log('Taking a screenshot for verification...');
 

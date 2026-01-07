@@ -6,7 +6,7 @@ class NavigationService {
 
     async clickTargetLink() {
         const selector = this.config.selectors.postLoginLink;
-        
+
         if (!selector) {
             console.log('No post-login link selector defined. Skipping click action.');
             return false;
@@ -14,7 +14,7 @@ class NavigationService {
 
         try {
             console.log(`Looking for link with selector: ${selector}...`);
-            
+
             // Wait for the element to be present and visible
             await this.page.waitForSelector(selector, { visible: true, timeout: 10000 });
 
@@ -22,13 +22,20 @@ class NavigationService {
             await new Promise(r => setTimeout(r, this.getRandomInt(1000, 3000)));
 
             console.log('Clicking the target link...');
-            
-            // Promise.all is used to handle cases where the click triggers a navigation
-            // We catch navigation errors in case the click acts as a simple JS trigger (Ajax) without page reload
-            await Promise.all([
-                this.page.click(selector),
-                this.page.waitForNavigation({ waitUntil: 'networkidle0', timeout: 15000 }).catch(e => console.log('Navigation timeout or no navigation occurred (might be an AJAX click).'))
-            ]);
+
+            try {
+                // Click and wait for potential network activity
+                await this.page.click(selector);
+
+                // Wait for any resulting network activity to settle (AJAX or Navigation)
+                // Using a short timeout because index.js also has a final wait
+                await this.page.waitForNetworkIdle({ idleTime: 500, timeout: 5000 }).catch(() => {
+                    console.log('Network did not idle after click (background tasks active), continuing...');
+                });
+            } catch (clickError) {
+                console.error(`Click failed: ${clickError.message}`);
+                throw clickError;
+            }
 
             console.log('Link clicked successfully.');
             return true;

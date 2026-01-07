@@ -29,7 +29,7 @@ class LoginService {
             // Click login button
             console.log('Clicking login button...');
             await Promise.all([
-                this.page.waitForNavigation({ waitUntil: 'networkidle2' }),
+                this.page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
                 this.page.click(this.config.selectors.loginButton)
             ]);
 
