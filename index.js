@@ -2,6 +2,7 @@ const config = require('./src/config');
 const browserService = require('./src/BrowserService');
 const LoginService = require('./src/LoginService');
 const NavigationService = require('./src/NavigationService');
+const notificationService = require('./src/NotificationService');
 const cron = require('node-cron');
 const fs = require('fs');
 
@@ -47,6 +48,9 @@ async function runBot() {
 
             await page.screenshot({ path: screenshotPath });
             console.log(`Screenshot saved to ${screenshotPath}`);
+
+            // Send notification via Ntfy
+            await notificationService.sendSnapshot(screenshotPath, 'Login successful. Action performed.');
 
             console.log('Routine finished successfully.');
         } else {

@@ -35,3 +35,12 @@ services:
       - NODE_ENV=production
       # Timezone to ensure the Cron runs at the correct local time
       - TZ=GMT
+
+      # --- Notifications (Ntfy) ---
+      # Server URL (e.g. https://ntfy.sh or http://ntfy-server:80)
+      - NTFY_SERVER=https://ntfy.sh
+      # The topic to publish to
+      - NTFY_TOPIC=
+      # Optional: Credentials if your topic is protected
+      - NTFY_USER=
+      - NTFY_PASSWORD=

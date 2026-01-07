@@ -15,6 +15,12 @@ module.exports = {
         username: process.env.USER_LOGIN,
         password: process.env.USER_PASSWORD
     },
+    ntfy: {
+        server: process.env.NTFY_SERVER, // e.g., 'https://ntfy.sh' or 'http://ntfy:80'
+        topic: process.env.NTFY_TOPIC,
+        user: process.env.NTFY_USER,
+        password: process.env.NTFY_PASSWORD
+    },
     headless: process.env.HEADLESS === 'true',
     cronSchedule: process.env.CRON_SCHEDULE
 };
