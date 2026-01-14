@@ -25,48 +25,44 @@ async function runBot() {
 
         console.log('Login process completed. Proceeding to navigation...');
 
-                        // Perform post-login navigation/click
-                        const navService = new NavigationService(page, config);
-                        await navService.clickTargetLink();
-                        
-                        // Wait for content to settle
-                        console.log('Waiting for content to settle before screenshot...');
-                        try {
-                            await page.waitForNetworkIdle({ idleTime: 500, timeout: config.timeouts.networkIdle, concurrency: 2 });
-                        } catch (e) {
-                            console.log('Network busy, proceeding to screenshot anyway...');
-                        }
-                
-                        console.log('Taking a screenshot for verification...');            const timestamp = new Date().toISOString().replace(/T/, '_').replace(/\..+/, '').replace(/:/g, '-');
-            const filename = `login_success_${timestamp}.png`;
+        // Perform post-login navigation/click
+        const navService = new NavigationService(page, config);
+        await navService.clickTargetLink();
 
-            // Capture screenshot in memory (Buffer)
-            const imageBuffer = await page.screenshot({ encoding: 'binary' });
+        // Wait for content to settle
+        console.log('Waiting for content to settle before screenshot...');
+        try {
+            await page.waitForNetworkIdle({idleTime: 500, timeout: config.timeouts.networkIdle, concurrency: 2});
+        } catch (e) {
+            console.log('Network busy, proceeding to screenshot anyway...');
+        }
 
-            // Send notification via Ntfy
-            await notificationService.sendSnapshot(imageBuffer, filename, 'Login successful. Action performed.');
+        console.log('Taking a screenshot for verification...');
+        const timestamp = new Date().toISOString().replace(/T/, '_').replace(/\..+/, '').replace(/:/g, '-');
+        const filename = `login_success_${timestamp}.png`;
 
-            console.log('Routine finished successfully.');
+        // Capture screenshot in memory (Buffer)
+        const imageBuffer = await page.screenshot({encoding: 'binary'});
+
+        // Send notification via Ntfy
+        await notificationService.sendSnapshot(imageBuffer, filename, 'Login successful. Action performed.');
+
+        console.log('Routine finished successfully.');
     } catch (error) {
         console.error('An unexpected error occurred:', error);
-        
+
         // Attempt to take an error screenshot
         if (browser) {
             try {
                 const pages = await browser.pages();
                 const page = pages.length > 0 ? pages[0] : null;
-                
+
                 if (page) {
                     console.log('Capturing error state screenshot...');
-                    const errorImageBuffer = await page.screenshot({ encoding: 'binary' });
+                    const errorImageBuffer = await page.screenshot({encoding: 'binary'});
                     const timestamp = new Date().toISOString().replace(/T/, '_').replace(/\..+/, '').replace(/:/g, '-');
-                    
-                    await notificationService.sendSnapshot(
-                        errorImageBuffer, 
-                        `error_${timestamp}.png`, 
-                        `Bot FAILED ❌\nReason: ${error.message}`,
-                        '5'
-                    );
+
+                    await notificationService.sendSnapshot(errorImageBuffer, `error_${timestamp}.png`, `Bot FAILED ❌\nReason: ${error.message}`, '5');
                 }
             } catch (snapshotError) {
                 console.error('Could not capture error screenshot:', snapshotError);
@@ -112,4 +108,4 @@ if (require.main === module) {
     }
 }
 
-module.exports = { runBot };
+module.exports = {runBot};

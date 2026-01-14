@@ -7,7 +7,7 @@ class LoginService {
     async performLogin() {
         try {
             console.log(`Navigating to ${this.config.targetUrl}...`);
-            await this.page.goto(this.config.targetUrl, { waitUntil: 'networkidle2' });
+            await this.page.goto(this.config.targetUrl, {waitUntil: 'networkidle2'});
 
             // Wait for selector to be visible
             await this.page.waitForSelector(this.config.selectors.username, {
@@ -32,7 +32,7 @@ class LoginService {
             // Click login button
             console.log('Clicking login button...');
             await Promise.all([
-                this.page.waitForNavigation({ waitUntil: 'domcontentloaded' }),
+                this.page.waitForNavigation({waitUntil: 'domcontentloaded'}),
                 this.page.click(this.config.selectors.loginButton)
             ]);
 
