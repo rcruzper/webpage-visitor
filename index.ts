@@ -1,21 +1,16 @@
-const config = require('./src/config');
-const browserService = require('./src/BrowserService');
-const LoginService = require('./src/LoginService');
-const NavigationService = require('./src/NavigationService');
-const notificationService = require('./src/NotificationService');
-const cron = require('node-cron');
+import config from './src/config';
+import browserService from './src/BrowserService';
+import LoginService from './src/LoginService';
+import NavigationService from './src/NavigationService';
+import notificationService from './src/NotificationService';
+import cron from 'node-cron';
+import { Browser } from 'puppeteer';
 
 // Main bot logic encapsulated
-async function runBot() {
+export async function runBot() {
     console.log(`[${new Date().toISOString()}] Starting visitor routine...`);
 
-    // Validate config
-    if (!config.targetUrl || !config.credentials.username || !config.credentials.password) {
-        console.error('Missing configuration. Please check your .env file.');
-        return;
-    }
-
-    let browser = null;
+    let browser: Browser | null = null;
     try {
         browser = await browserService.launchBrowser();
         const page = await browserService.createPage(browser);
@@ -42,13 +37,14 @@ async function runBot() {
         const filename = `login_success_${timestamp}.png`;
 
         // Capture screenshot in memory (Buffer)
-        const imageBuffer = await page.screenshot({encoding: 'binary'});
+        // Explicitly cast to Buffer because Puppeteer types return string | Buffer
+        const imageBuffer = await page.screenshot({encoding: 'binary'}) as Buffer;
 
         // Send notification via Ntfy
         await notificationService.sendSnapshot(imageBuffer, filename, 'Login successful. Action performed.');
 
         console.log('Routine finished successfully.');
-    } catch (error) {
+    } catch (error: any) {
         console.error('An unexpected error occurred:', error);
 
         // Attempt to take an error screenshot
@@ -59,7 +55,7 @@ async function runBot() {
 
                 if (page) {
                     console.log('Capturing error state screenshot...');
-                    const errorImageBuffer = await page.screenshot({encoding: 'binary'});
+                    const errorImageBuffer = await page.screenshot({encoding: 'binary'}) as Buffer;
                     const timestamp = new Date().toISOString().replace(/T/, '_').replace(/\..+/, '').replace(/:/g, '-');
 
                     await notificationService.sendSnapshot(errorImageBuffer, `error_${timestamp}.png`, `Bot FAILED ❌\nReason: ${error.message}`, '5');
@@ -107,5 +103,3 @@ if (require.main === module) {
         runBot();
     }
 }
-
-module.exports = {runBot};

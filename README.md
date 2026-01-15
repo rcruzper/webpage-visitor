@@ -88,21 +88,20 @@ To run the bot directly on your machine (requires Node.js v18+).
 3. **Run**:
    ```bash
    # Run once or schedule based on config
-   node index.js
+   node index.ts
    ```
 
 ## 📂 Project Structure
 
 ```
 ├── src/
-│   ├── BrowserService.js    # Puppeteer setup & stealth config
-│   ├── LoginService.js      # Auth logic with human typing simulation
-│   ├── NavigationService.js # Post-login actions
-│   └── config.js            # Env var loading
-├── output/                  # Screenshots are saved here
+│   ├── BrowserService.ts    # Puppeteer setup & stealth config
+│   ├── LoginService.ts      # Auth logic with human typing simulation
+│   ├── NavigationService.ts # Post-login actions
+│   └── config.ts            # Env var loading
 ├── docker-compose.yml       # Docker orchestration
 ├── Dockerfile               # Multi-stage Docker build
-└── index.js                 # Entry point
+└── index.ts                 # Entry point
 ```
 
 ## ⚠️ Disclaimer

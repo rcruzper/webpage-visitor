@@ -1,9 +1,11 @@
-const LoginService = require('../../src/LoginService');
+import LoginService from '../../src/LoginService';
+import { Page } from 'puppeteer';
+import { Config } from '../../src/config';
 
 describe('LoginService Unit Tests', () => {
-    let mockPage;
-    let config;
-    let loginService;
+    let mockPage: any;
+    let config: Config;
+    let loginService: LoginService;
 
     beforeEach(() => {
         // Mock Puppeteer Page object
@@ -24,20 +26,30 @@ describe('LoginService Unit Tests', () => {
             selectors: {
                 username: '#user',
                 password: '#pass',
-                loginButton: '#btn'
+                loginButton: '#btn',
+                postLoginLink: undefined
             },
             credentials: {
                 username: 'testuser',
                 password: 'testpass'
             },
-            timeouts: { selector: 100 },
+            ntfy: {
+                server: undefined,
+                topic: undefined,
+                user: undefined,
+                password: undefined
+            },
+            timeouts: { selector: 100, networkIdle: 100 },
             delays: {
                 typingMin: 0, typingMax: 0,
-                loginPauseMin: 0, loginPauseMax: 0
-            }
+                loginPauseMin: 0, loginPauseMax: 0,
+                navPauseMin: 0, navPauseMax: 0
+            },
+            headless: true,
+            cronSchedule: undefined
         };
 
-        loginService = new LoginService(mockPage, config);
+        loginService = new LoginService(mockPage as Page, config);
     });
 
     test('performLogin should execute the full login sequence', async () => {
@@ -51,7 +63,9 @@ describe('LoginService Unit Tests', () => {
         
         // 3. Type Username (Focus + Type)
         expect(mockPage.focus).toHaveBeenCalledWith('#user');
-        expect(mockPage.keyboard.type).toHaveBeenCalledTimes(config.credentials.username.length + config.credentials.password.length);
+        // Username length + Password length
+        const totalChars = config.credentials.username.length + config.credentials.password.length;
+        expect(mockPage.keyboard.type).toHaveBeenCalledTimes(totalChars);
         
         // 4. Click Login
         expect(mockPage.click).toHaveBeenCalledWith('#btn');

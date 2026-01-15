@@ -1,16 +1,17 @@
-const puppeteer = require('puppeteer-extra');
-const StealthPlugin = require('puppeteer-extra-plugin-stealth');
+import puppeteer from 'puppeteer-extra';
+import StealthPlugin from 'puppeteer-extra-plugin-stealth';
+import { Browser, Page } from 'puppeteer';
+import config from './config';
 
 puppeteer.use(StealthPlugin());
-const config = require('./config');
 
 class BrowserService {
-    async launchBrowser() {
+    public async launchBrowser(): Promise<Browser> {
         // Launch browser with stealth settings
         const browser = await puppeteer.launch({
-            headless: config.headless ? "new" : false,
+            headless: config.headless,
             executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
-            dumpio: false, // Set to false to hide browser process logs (like D-Bus errors)
+            dumpio: false, // false to hide browser process logs (like D-Bus errors)
             args: [
                 '--no-sandbox',
                 '--disable-setuid-sandbox',
@@ -23,10 +24,10 @@ class BrowserService {
                 '--no-zygote'
             ]
         });
-        return browser;
+        return browser as unknown as Browser;
     }
 
-    async createPage(browser) {
+    public async createPage(browser: Browser): Promise<Page> {
         const page = await browser.newPage();
 
         // Set a standard User Agent
@@ -53,4 +54,4 @@ class BrowserService {
     }
 }
 
-module.exports = new BrowserService();
+export default new BrowserService();

@@ -1,10 +1,16 @@
+import { Page } from 'puppeteer';
+import { Config } from './config';
+
 class NavigationService {
-    constructor(page, config) {
+    private page: Page;
+    private config: Config;
+
+    constructor(page: Page, config: Config) {
         this.page = page;
         this.config = config;
     }
 
-    async clickTargetLink() {
+    public async clickTargetLink(): Promise<boolean> {
         const selector = this.config.selectors.postLoginLink;
 
         if (!selector) {
@@ -37,7 +43,7 @@ class NavigationService {
                 }).catch(() => {
                     console.log('Network did not idle after click (background tasks active), continuing...');
                 });
-            } catch (clickError) {
+            } catch (clickError: any) {
                 console.error(`Click failed: ${clickError.message}`);
                 throw clickError;
             }
@@ -45,15 +51,15 @@ class NavigationService {
             console.log('Link clicked successfully.');
             return true;
 
-        } catch (error) {
+        } catch (error: any) {
             console.error(`Failed to click the link: ${error.message}`);
             throw error;
         }
     }
 
-    getRandomInt(min, max) {
+    private getRandomInt(min: number, max: number): number {
         return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 }
 
-module.exports = NavigationService;
+export default NavigationService;

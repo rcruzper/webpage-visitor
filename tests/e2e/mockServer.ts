@@ -1,11 +1,12 @@
-const express = require('express');
+import express, { Request, Response } from 'express';
+import bodyParser from 'body-parser';
+
 const app = express();
-const bodyParser = require('body-parser');
 
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Login Page
-app.get('/login', (req, res) => {
+app.get('/login', (req: Request, res: Response) => {
     res.send(`
         <html>
             <body>
@@ -21,7 +22,7 @@ app.get('/login', (req, res) => {
 });
 
 // Handle Login
-app.post('/login', (req, res) => {
+app.post('/login', (req: Request, res: Response) => {
     const { password } = req.body;
     
     // Simulate processing delay
@@ -35,7 +36,7 @@ app.post('/login', (req, res) => {
 });
 
 // Dashboard Page
-app.get('/dashboard', (req, res) => {
+app.get('/dashboard', (req: Request, res: Response) => {
     res.send(`
         <html>
             <body>
@@ -47,8 +48,8 @@ app.get('/dashboard', (req, res) => {
 });
 
 // Success Page (target of the click)
-app.get('/success', (req, res) => {
+app.get('/success', (req: Request, res: Response) => {
     res.send('<h1>Action Success</h1>');
 });
 
-module.exports = app;
+export default app;

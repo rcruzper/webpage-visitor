@@ -1,8 +1,11 @@
-const fs = require('fs');
-const path = require('path');
-const config = require('./config');
+import config from './config';
 
 class NotificationService {
+    private readonly serverUrl: string | undefined;
+    private readonly topic: string | undefined;
+    private readonly user: string | undefined;
+    private readonly password: string | undefined;
+
     constructor() {
         this.serverUrl = config.ntfy.server;
         this.topic = config.ntfy.topic;
@@ -10,7 +13,7 @@ class NotificationService {
         this.password = config.ntfy.password;
     }
 
-    async sendSnapshot(imageBuffer, filename, message = 'Bot finished successfully', priority = '3') {
+    public async sendSnapshot(imageBuffer: Buffer, filename: string, message: string = 'Bot finished successfully', priority: string = '3'): Promise<void> {
         if (!this.serverUrl || !this.topic) {
             console.log('Ntfy is not configured. Skipping notification.');
             return;
@@ -20,7 +23,7 @@ class NotificationService {
         console.log(`Sending notification to ${fullUrl}...`);
 
         try {
-            const headers = {
+            const headers: Record<string, string> = {
                 'Title': 'Webpage Visitor Report',
                 'Priority': priority,
                 'Tags': 'robot,camera',
@@ -37,7 +40,7 @@ class NotificationService {
             // Send buffer directly
             const response = await fetch(fullUrl, {
                 method: 'PUT',
-                body: imageBuffer,
+                body: imageBuffer as any,
                 headers: headers
             });
 
@@ -55,4 +58,4 @@ class NotificationService {
     }
 }
 
-module.exports = new NotificationService();
+export default new NotificationService();

@@ -1,6 +1,8 @@
-const mockServer = require('./mockServer');
-const { runBot } = require('../../index');
-const http = require('http');
+import mockServer from './mockServer';
+import { runBot } from '../../index';
+import http from 'http';
+import { Server } from 'http';
+import notificationService from '../../src/NotificationService';
 
 // Mocks
 jest.mock('../../src/config', () => ({
@@ -39,20 +41,23 @@ jest.mock('../../src/NotificationService', () => ({
     sendSnapshot: jest.fn()
 }));
 
-const notificationService = require('../../src/NotificationService');
-
 // Increase timeout for the entire suite to handle Puppeteer's slow interactions
 jest.setTimeout(30000);
 
 describe('E2E Bot Flow', () => {
-    let server;
-    let port;
+    let server: Server;
+    let port: number;
 
     beforeAll((done) => {
         // Start Mock Server on a random port
         server = http.createServer(mockServer);
         server.listen(0, () => {
-            port = server.address().port;
+            const address = server.address();
+            if (typeof address === 'string' || address === null) {
+                done.fail('Server address is not a valid address object');
+                return;
+            }
+            port = address.port;
             // Update config mock with real port
             const config = require('../../src/config');
             config.targetUrl = `http://localhost:${port}/login`;
@@ -76,7 +81,7 @@ describe('E2E Bot Flow', () => {
         expect(notificationService.sendSnapshot).toHaveBeenCalledTimes(1);
 
         // Check arguments passed to sendSnapshot
-        const [buffer, filename, message] = notificationService.sendSnapshot.mock.calls[0];
+        const [buffer, filename, message] = (notificationService.sendSnapshot as jest.Mock).mock.calls[0];
 
         expect(Buffer.isBuffer(buffer)).toBe(true);
         expect(filename).toMatch(/login_success_.*\.png/);
@@ -96,7 +101,7 @@ describe('E2E Bot Flow', () => {
         config.selectors.username = originalSelector;
 
         expect(notificationService.sendSnapshot).toHaveBeenCalledTimes(1);
-        const [buffer, filename, message, priority] = notificationService.sendSnapshot.mock.calls[0];
+        const [buffer, filename, message, priority] = (notificationService.sendSnapshot as jest.Mock).mock.calls[0];
 
         expect(message).toContain('Bot FAILED');
         expect(priority).toBe('5'); // Assert High Priority
@@ -114,7 +119,7 @@ describe('E2E Bot Flow', () => {
         config.selectors.postLoginLink = originalSelector;
 
         expect(notificationService.sendSnapshot).toHaveBeenCalledTimes(1);
-        const [buffer, filename, message, priority] = notificationService.sendSnapshot.mock.calls[0];
+        const [buffer, filename, message, priority] = (notificationService.sendSnapshot as jest.Mock).mock.calls[0];
 
         // Verify the error message specifically mentions the failure
         // Depending on implementation, it might be "Node is either not visible or not an HTMLElement" or Timeout

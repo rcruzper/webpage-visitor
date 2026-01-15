@@ -1,10 +1,16 @@
+import { Page } from 'puppeteer';
+import { Config } from './config';
+
 class LoginService {
-    constructor(page, config) {
+    private page: Page;
+    private config: Config;
+
+    constructor(page: Page, config: Config) {
         this.page = page;
         this.config = config;
     }
 
-    async performLogin() {
+    public async performLogin(): Promise<boolean> {
         try {
             console.log(`Navigating to ${this.config.targetUrl}...`);
             await this.page.goto(this.config.targetUrl, {waitUntil: 'networkidle2'});
@@ -45,7 +51,7 @@ class LoginService {
         }
     }
 
-    async typeHumanLike(selector, text) {
+    private async typeHumanLike(selector: string, text: string): Promise<void> {
         await this.page.focus(selector);
         for (const char of text) {
             await this.page.keyboard.type(char, {
@@ -54,9 +60,9 @@ class LoginService {
         }
     }
 
-    getRandomInt(min, max) {
+    private getRandomInt(min: number, max: number): number {
         return Math.floor(Math.random() * (max - min + 1)) + min;
     }
 }
 
-module.exports = LoginService;
+export default LoginService;

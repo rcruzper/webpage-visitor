@@ -1,6 +1,4 @@
-const notificationService = require('../../src/NotificationService');
-const config = require('../../src/config');
-const fs = require('fs');
+import notificationService from '../../src/NotificationService';
 
 // Mock dependencies
 jest.mock('../../src/config', () => ({
@@ -17,7 +15,7 @@ global.fetch = jest.fn();
 
 describe('NotificationService', () => {
     beforeEach(() => {
-        global.fetch.mockClear();
+        (global.fetch as jest.Mock).mockClear();
     });
 
     test('should send snapshot with correct headers and basic auth', async () => {
@@ -25,7 +23,7 @@ describe('NotificationService', () => {
         const filename = 'test.png';
         const message = 'Test message';
 
-        global.fetch.mockResolvedValue({
+        (global.fetch as jest.Mock).mockResolvedValue({
             ok: true,
             text: () => Promise.resolve('ok')
         });
@@ -34,7 +32,7 @@ describe('NotificationService', () => {
 
         expect(global.fetch).toHaveBeenCalledTimes(1);
         
-        const [url, options] = global.fetch.mock.calls[0];
+        const [url, options] = (global.fetch as jest.Mock).mock.calls[0];
         
         expect(url).toBe('https://test.ntfy.sh/test-topic');
         expect(options.method).toBe('PUT');
@@ -49,7 +47,7 @@ describe('NotificationService', () => {
 
     test('should handle fetch errors gracefully', async () => {
         const dummyBuffer = Buffer.from('fake-image');
-        global.fetch.mockRejectedValue(new Error('Network error'));
+        (global.fetch as jest.Mock).mockRejectedValue(new Error('Network error'));
         
         const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
