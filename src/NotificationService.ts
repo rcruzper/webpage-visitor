@@ -23,12 +23,19 @@ class NotificationService {
         console.log(`Sending notification to ${fullUrl}...`);
 
         try {
+            // Sanitize message for HTTP headers:
+            // 1. Replace newlines with spaces (HTTP headers cannot contain newlines)
+            // 2. Remove non-ASCII characters (Node.js fetch is strict about ASCII headers)
+            const safeMessage = message
+                .replace(/[\r\n]+/g, " ")   // Replace newlines with space
+                .replace(/[^\x00-\x7F]/g, ""); // Remove non-ASCII (emojis, etc.)
+
             const headers: Record<string, string> = {
                 'Title': 'Webpage Visitor Report',
                 'Priority': priority,
-                'Tags': 'robot,camera',
+                'Tags': 'robot',
                 'Filename': filename,
-                'Message': message
+                'Message': safeMessage
             };
 
             // Add Basic Auth header if credentials exist

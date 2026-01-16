@@ -56,4 +56,20 @@ describe('NotificationService', () => {
         expect(consoleSpy).toHaveBeenCalledWith('Error sending notification:', expect.any(Error));
         consoleSpy.mockRestore();
     });
+
+    test('should sanitize message headers removing newlines and non-ASCII characters to avoid fetch errors', async () => {
+        const dummyBuffer = Buffer.from('fake-image');
+        const messageWithNewline = '❌Line 1\nLine 2';
+        
+        (global.fetch as jest.Mock).mockResolvedValue({ ok: true });
+
+        await notificationService.sendSnapshot(dummyBuffer, 'test.png', messageWithNewline);
+
+        const [url, options] = (global.fetch as jest.Mock).mock.calls[0];
+        
+        // The message in the header should not contain \n
+        expect(options.headers['Message']).not.toContain('\n');
+        // It should probably replace it with a space or something safe
+        expect(options.headers['Message']).toBe('Line 1 Line 2');
+    });
 });

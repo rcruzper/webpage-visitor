@@ -58,7 +58,7 @@ export async function runBot() {
                     const errorImageBuffer = await page.screenshot({encoding: 'binary'}) as Buffer;
                     const timestamp = new Date().toISOString().replace(/T/, '_').replace(/\..+/, '').replace(/:/g, '-');
 
-                    await notificationService.sendSnapshot(errorImageBuffer, `error_${timestamp}.png`, `Bot FAILED ❌\nReason: ${error.message}`, '5');
+                    await notificationService.sendSnapshot(errorImageBuffer, `error_${timestamp}.png`, `Bot FAILED. Reason: ${error.message}`, '5');
                 }
             } catch (snapshotError) {
                 console.error('Could not capture error screenshot:', snapshotError);

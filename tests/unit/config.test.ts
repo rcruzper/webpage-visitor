@@ -44,7 +44,7 @@ describe('Config Validation (src/config.ts)', () => {
             expect(config.targetUrl).toBe('http://example.com');
             expect(config.credentials.username).toBe('myuser');
             expect(config.timeouts.selector).toBe(10000);
-            expect(config.headless).toBe(true);
+            expect(config.headless).toBe(false);
         });
     });
 

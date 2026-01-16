@@ -9,12 +9,12 @@ ENV PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=true
 
 WORKDIR /app
 
-# Copy package files
-#COPY package.json package-lock.json* ./ preguntar si es buena práctica poner el lock.json
-COPY package.json ./
+# Copy package files, including the lockfile for reproducible builds
+COPY package.json package-lock.json ./
 
 # Install all dependencies (including devDependencies for building)
-RUN npm install
+# Using 'npm ci' is recommended in CI/Docker as it's faster and strictly follows the lockfile
+RUN npm ci
 
 # Copy source code
 COPY . .

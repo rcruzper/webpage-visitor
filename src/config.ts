@@ -37,17 +37,15 @@ const configSchema = z.object({
         navPauseMin: z.coerce.number().default(1000),
         navPauseMax: z.coerce.number().default(3000),
     }),
-    // Custom preprocess for headless to correctly handle 'true'/'false' strings and default
+    // Custom preprocess for headless to correctly handle 'true'/'false' strings
     headless: z.preprocess((val) => {
         if (typeof val === 'string') {
             const lowerVal = val.toLowerCase();
             if (lowerVal === 'true') return true;
             if (lowerVal === 'false') return false;
         }
-        // If not 'true' or 'false' string, or not a string, return undefined
-        // so the default(true) can be applied for undefined values.
         return undefined;
-    }, z.boolean().default(true)),
+    }, z.boolean().default(false)),
     cronSchedule: z.string().optional(),
 });
 
@@ -82,7 +80,7 @@ const rawConfig = {
         navPauseMin: process.env.DELAY_NAV_PAUSE_MIN,
         navPauseMax: process.env.DELAY_NAV_PAUSE_MAX
     },
-    headless: process.env.HEADLESS, // Pass the raw value to let Zod preprocess it
+    headless: process.env.HEADLESS,
     cronSchedule: process.env.CRON_SCHEDULE
 };
 
