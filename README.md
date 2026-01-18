@@ -10,8 +10,9 @@ Built with **Puppeteer**, **Node.js**, and **Docker**.
 - **Human-like Interaction**: Implements random typing delays and mouse movements.
 - **Automated Login**: Handles username/password entry and form submission.
 - **Task Execution**: Clicks specific links or elements after logging in.
-- **Verification**: Captures screenshots upon successful execution to `output/`.
-- **Scheduling**: Built-in CRON scheduler (optional).
+- **Data Extraction**: Can extract specific text data from the page after navigation.
+- **Notifications**: Sends execution reports (success/failure) with screenshots via **Ntfy**.
+- **Scheduling**: Built-in CRON scheduler with randomized execution delay.
 - **Dockerized**: optimized Alpine-based image with Chromium pre-installed.
 
 ## 🛠 Configuration
@@ -27,6 +28,15 @@ Configuration is managed via environment variables (in `.env` file or `docker-co
 | `USER_PASSWORD` | Password for the site. | `mypassword123` |
 | `CRON_SCHEDULE` | CRON expression for scheduling. Leave empty to run once. | `0 8 * * *` (Daily at 8am) |
 
+### Notification (Ntfy)
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `NTFY_SERVER` | URL of your Ntfy server. | `https://ntfy.sh` |
+| `NTFY_TOPIC` | Topic name to publish notifications to. | `my-secret-topic` |
+| `NTFY_USER` | (Optional) Username for Ntfy Basic Auth. | `admin` |
+| `NTFY_PASSWORD` | (Optional) Password for Ntfy Basic Auth. | `secret` |
+
 ### CSS Selectors (Site Specific)
 
 You must identify the CSS selectors for the target website elements:
@@ -37,6 +47,14 @@ You must identify the CSS selectors for the target website elements:
 | `PASSWORD_SELECTOR` | CSS selector for the password input field. |
 | `LOGIN_BUTTON_SELECTOR` | CSS selector for the login submit button. |
 | `POST_LOGIN_LINK_SELECTOR` | (Optional) Selector for the element to click after login. |
+
+### Data Extraction (Optional)
+
+You can define selectors to extract text from the page and include it in the notification. Use the format `KEY=SELECTOR`.
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `DATA_SELECTORS` | JSON string or comma-separated list of key-selector pairs. | `{"Balance": "#balance-div", "Status": ".status-badge"}` |
 
 ### System Options
 
@@ -64,8 +82,8 @@ This project is optimized to run as a container.
    docker logs -f webpage_visitor
    ```
 
-4. **View Results**:
-   Screenshots will appear in the `./output` directory on your host machine.
+4. **Notifications**:
+   You will receive notifications on your configured Ntfy topic with a screenshot and status report.
 
 ---
 
@@ -88,20 +106,22 @@ To run the bot directly on your machine (requires Node.js v18+).
 3. **Run**:
    ```bash
    # Run once or schedule based on config
-   node index.ts
+   npm start
    ```
 
 ## 📂 Project Structure
 
 ```
 ├── src/
-│   ├── BrowserService.ts    # Puppeteer setup & stealth config
-│   ├── LoginService.ts      # Auth logic with human typing simulation
-│   ├── NavigationService.ts # Post-login actions
-│   └── config.ts            # Env var loading
-├── docker-compose.yml       # Docker orchestration
-├── Dockerfile               # Multi-stage Docker build
-└── index.ts                 # Entry point
+│   ├── BrowserService.ts      # Puppeteer setup & stealth config
+│   ├── LoginService.ts        # Auth logic with human typing simulation
+│   ├── NavigationService.ts   # Post-login actions & data extraction
+│   ├── NotificationService.ts # Ntfy integration
+│   └── config.ts              # Env var loading
+├── tests/                     # Unit and E2E tests
+├── docker-compose.yml         # Docker orchestration
+├── Dockerfile                 # Multi-stage Docker build
+└── index.ts                   # Entry point
 ```
 
 ## ⚠️ Disclaimer

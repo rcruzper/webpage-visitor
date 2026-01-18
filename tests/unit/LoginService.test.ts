@@ -29,6 +29,7 @@ describe('LoginService Unit Tests', () => {
                 loginButton: '#btn',
                 postLoginLink: undefined
             },
+            dataSelectors: {},
             credentials: {
                 username: 'testuser',
                 password: 'testpass'

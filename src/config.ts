@@ -15,6 +15,7 @@ const configSchema = z.object({
         loginButton: z.string().min(1, { message: "LOGIN_BUTTON_SELECTOR is required" }),
         postLoginLink: z.string().optional(),
     }),
+    dataSelectors: z.record(z.string()).default({}),
     credentials: z.object({
         username: z.string().min(1, { message: "USER_LOGIN is required" }),
         password: z.string().min(1, { message: "USER_PASSWORD is required" }),
@@ -49,6 +50,17 @@ const configSchema = z.object({
     cronSchedule: z.string().optional(),
 });
 
+// Helper to parse JSON env vars safely
+const parseJsonEnv = (envVar: string | undefined, fallback: any = {}) => {
+    if (!envVar) return fallback;
+    try {
+        return JSON.parse(envVar);
+    } catch (e) {
+        console.warn(`Failed to parse JSON environment variable: ${envVar}`);
+        return fallback;
+    }
+};
+
 // Pass the raw environment variables to Zod for parsing
 const rawConfig = {
     targetUrl: process.env.TARGET_URL,
@@ -58,6 +70,7 @@ const rawConfig = {
         loginButton: process.env.LOGIN_BUTTON_SELECTOR,
         postLoginLink: process.env.POST_LOGIN_LINK_SELECTOR
     },
+    dataSelectors: parseJsonEnv(process.env.DATA_SELECTORS),
     credentials: {
         username: process.env.USER_LOGIN,
         password: process.env.USER_PASSWORD

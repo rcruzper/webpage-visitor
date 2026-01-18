@@ -45,6 +45,7 @@ describe('Config Validation (src/config.ts)', () => {
             expect(config.credentials.username).toBe('myuser');
             expect(config.timeouts.selector).toBe(10000);
             expect(config.headless).toBe(false);
+            expect(config.dataSelectors).toEqual({});
         });
     });
 
@@ -77,7 +78,33 @@ describe('Config Validation (src/config.ts)', () => {
         });
     });
 
-    test('should fail (process.exit) if TARGET_URL is missing', () => {
+    test('should correctly parse DATA_SELECTORS JSON', () => {
+        jest.isolateModules(() => {
+            setMinimumEnv();
+            process.env.DATA_SELECTORS = '{"Balance": "#balance", "User": ".user"}';
+            const config = require('../../src/config').default;
+            expect(config.dataSelectors).toEqual({
+                "Balance": "#balance",
+                "User": ".user"
+            });
+        });
+    });
+
+    test('should handle invalid DATA_SELECTORS JSON gracefully', () => {
+        jest.isolateModules(() => {
+            setMinimumEnv();
+            process.env.DATA_SELECTORS = '{invalid-json}';
+            
+            const consoleWarnSpy = jest.spyOn(console, 'warn').mockImplementation(() => {});
+            
+            const config = require('../../src/config').default;
+            
+            expect(config.dataSelectors).toEqual({});
+            expect(consoleWarnSpy).toHaveBeenCalled();
+        });
+    });
+
+    test('should fail (process.exit) and log error if TARGET_URL is missing', () => {
         jest.isolateModules(() => {
             setMinimumEnv();
             delete process.env.TARGET_URL;
@@ -85,10 +112,12 @@ describe('Config Validation (src/config.ts)', () => {
             expect(() => {
                 require('../../src/config');
             }).toThrow('Process.exit called with code 1');
+
+            expect(console.error).toHaveBeenCalledWith(expect.stringContaining(' - targetUrl: Required'));
         });
     });
 
-    test('should fail if TARGET_URL is invalid', () => {
+    test('should fail and log error if TARGET_URL is invalid', () => {
         jest.isolateModules(() => {
             setMinimumEnv();
             process.env.TARGET_URL = 'not-a-url';
@@ -96,10 +125,12 @@ describe('Config Validation (src/config.ts)', () => {
             expect(() => {
                 require('../../src/config');
             }).toThrow('Process.exit called with code 1');
+
+            expect(console.error).toHaveBeenCalledWith(expect.stringContaining('TARGET_URL must be a valid URL'));
         });
     });
 
-    test('should fail if a required selector is missing', () => {
+    test('should fail and log error if a required selector is missing', () => {
         jest.isolateModules(() => {
             setMinimumEnv();
             delete process.env.USERNAME_SELECTOR;
@@ -107,10 +138,12 @@ describe('Config Validation (src/config.ts)', () => {
             expect(() => {
                 require('../../src/config');
             }).toThrow('Process.exit called with code 1');
+
+            expect(console.error).toHaveBeenCalledWith(expect.stringContaining(' - selectors.username: Required'));
         });
     });
 
-    test('should fail if credentials are missing', () => {
+    test('should fail and log error if credentials are missing', () => {
         jest.isolateModules(() => {
             setMinimumEnv();
             delete process.env.USER_PASSWORD;
@@ -118,6 +151,8 @@ describe('Config Validation (src/config.ts)', () => {
             expect(() => {
                 require('../../src/config');
             }).toThrow('Process.exit called with code 1');
+
+            expect(console.error).toHaveBeenCalledWith(expect.stringContaining(' - credentials.password: Required'));
         });
     });
 

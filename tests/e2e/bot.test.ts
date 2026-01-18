@@ -13,6 +13,7 @@ jest.mock('../../src/config', () => ({
         loginButton: '#login-btn',
         postLoginLink: '#target-link'
     },
+    dataSelectors: {},
     credentials: {
         username: 'testuser',
         password: 'testpass'
@@ -38,7 +39,7 @@ jest.mock('../../src/config', () => ({
 
 // Mock Notification Service to avoid real network calls and assert success
 jest.mock('../../src/NotificationService', () => ({
-    sendSnapshot: jest.fn()
+    sendNotification: jest.fn()
 }));
 
 // Increase timeout for the entire suite to handle Puppeteer's slow interactions
@@ -78,14 +79,14 @@ describe('E2E Bot Flow', () => {
         await runBot();
 
         // Assertions
-        expect(notificationService.sendSnapshot).toHaveBeenCalledTimes(1);
+        expect(notificationService.sendNotification).toHaveBeenCalledTimes(1);
 
-        // Check arguments passed to sendSnapshot
-        const [buffer, filename, message] = (notificationService.sendSnapshot as jest.Mock).mock.calls[0];
+        // Check arguments passed to sendNotification
+        const [buffer, filename, title] = (notificationService.sendNotification as jest.Mock).mock.calls[0];
 
         expect(Buffer.isBuffer(buffer)).toBe(true);
         expect(filename).toMatch(/login_success_.*\.png/);
-        expect(message).toContain('Login successful');
+        expect(title).toContain('Bot - Action performed');
     });
 
     test('should catch login errors (e.g. selector missing) and send alert', async () => {
@@ -100,10 +101,10 @@ describe('E2E Bot Flow', () => {
 
         config.selectors.username = originalSelector;
 
-        expect(notificationService.sendSnapshot).toHaveBeenCalledTimes(1);
-        const [buffer, filename, message, priority] = (notificationService.sendSnapshot as jest.Mock).mock.calls[0];
+        expect(notificationService.sendNotification).toHaveBeenCalledTimes(1);
+        const [buffer, filename, title, priority] = (notificationService.sendNotification as jest.Mock).mock.calls[0];
 
-        expect(message).toContain('Bot FAILED');
+        expect(title).toContain('Bot - Action FAILED');
         expect(priority).toBe('5'); // Assert High Priority
     }, 40000);
 
@@ -118,12 +119,12 @@ describe('E2E Bot Flow', () => {
 
         config.selectors.postLoginLink = originalSelector;
 
-        expect(notificationService.sendSnapshot).toHaveBeenCalledTimes(1);
-        const [buffer, filename, message, priority] = (notificationService.sendSnapshot as jest.Mock).mock.calls[0];
+        expect(notificationService.sendNotification).toHaveBeenCalledTimes(1);
+        const [buffer, filename, title, priority] = (notificationService.sendNotification as jest.Mock).mock.calls[0];
 
         // Verify the error message specifically mentions the failure
         // Depending on implementation, it might be "Node is either not visible or not an HTMLElement" or Timeout
-        expect(message).toContain('Bot FAILED');
+        expect(title).toContain('Bot - Action FAILED');
         expect(priority).toBe('5');
     }, 40000);
 });

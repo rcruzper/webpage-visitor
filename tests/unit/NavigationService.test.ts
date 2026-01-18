@@ -11,7 +11,9 @@ describe('NavigationService Unit Tests', () => {
         mockPage = {
             waitForSelector: jest.fn(),
             click: jest.fn(),
-            waitForNetworkIdle: jest.fn().mockResolvedValue(undefined)
+            waitForNetworkIdle: jest.fn().mockResolvedValue(undefined),
+            $: jest.fn(),
+            evaluate: jest.fn()
         };
 
         // Create a valid config object satisfying the Zod schema types
@@ -23,6 +25,7 @@ describe('NavigationService Unit Tests', () => {
                 loginButton: '#btn',
                 postLoginLink: '#target'
             },
+            dataSelectors: {},
             credentials: {
                 username: 'user',
                 password: 'pass'
@@ -69,5 +72,37 @@ describe('NavigationService Unit Tests', () => {
         mockPage.click.mockRejectedValue(new Error('Click blocked'));
 
         await expect(navService.clickTargetLink()).rejects.toThrow('Click blocked');
+    });
+
+    test('extractData should return empty string if no data selectors configured', async () => {
+        config.dataSelectors = {};
+        navService = new NavigationService(mockPage as Page, config);
+        const data = await navService.extractData();
+        expect(data).toEqual('');
+    });
+
+    test('extractData should extract text from configured selectors', async () => {
+        config.dataSelectors = { 'Balance': '#balance' };
+        navService = new NavigationService(mockPage as Page, config);
+
+        const mockElement = {};
+        mockPage.$.mockResolvedValue(mockElement);
+        mockPage.evaluate.mockResolvedValue('100.00');
+
+        const data = await navService.extractData();
+
+        expect(mockPage.$).toHaveBeenCalledWith('#balance');
+        expect(data).toEqual('Balance: 100.00');
+    });
+
+    test('extractData should handle missing elements gracefully', async () => {
+        config.dataSelectors = { 'Balance': '#balance' };
+        navService = new NavigationService(mockPage as Page, config);
+
+        mockPage.$.mockResolvedValue(null);
+
+        const data = await navService.extractData();
+
+        expect(data).toEqual('Balance: Not found');
     });
 });

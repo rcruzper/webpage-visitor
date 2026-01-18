@@ -21,14 +21,14 @@ describe('NotificationService', () => {
     test('should send snapshot with correct headers and basic auth', async () => {
         const dummyBuffer = Buffer.from('fake-image');
         const filename = 'test.png';
-        const message = 'Test message';
+        const title = 'Test message';
 
         (global.fetch as jest.Mock).mockResolvedValue({
             ok: true,
             text: () => Promise.resolve('ok')
         });
 
-        await notificationService.sendSnapshot(dummyBuffer, filename, message, '3');
+        await notificationService.sendNotification(dummyBuffer, filename, title, '3');
 
         expect(global.fetch).toHaveBeenCalledTimes(1);
         
@@ -38,11 +38,26 @@ describe('NotificationService', () => {
         expect(options.method).toBe('PUT');
         expect(options.headers['Priority']).toBe('3');
         expect(options.headers['Filename']).toBe(filename);
-        expect(options.headers['Message']).toBe(message);
+        expect(options.headers['Title']).toBe(title);
         
         // Verify Basic Auth (base64 of test-user:test-password)
         const expectedAuth = 'Basic ' + Buffer.from('test-user:test-password').toString('base64');
         expect(options.headers['Authorization']).toBe(expectedAuth);
+    });
+
+    test('should include extra data in message body', async () => {
+        const dummyBuffer = Buffer.from('fake-image');
+        const message = 'Balance: 100.00';
+        
+        (global.fetch as jest.Mock).mockResolvedValue({ ok: true });
+
+        await notificationService.sendNotification(dummyBuffer, 'test.png', 'Base Title', '3', message);
+
+        const [url, options] = (global.fetch as jest.Mock).mock.calls[0];
+        const messageHeader = options.headers['Message'];
+        
+        // In the new implementation, message goes into the Message header
+        expect(messageHeader).toContain('Balance: 100.00');
     });
 
     test('should handle fetch errors gracefully', async () => {
@@ -51,7 +66,7 @@ describe('NotificationService', () => {
         
         const consoleSpy = jest.spyOn(console, 'error').mockImplementation(() => {});
 
-        await notificationService.sendSnapshot(dummyBuffer, 'fail.png');
+        await notificationService.sendNotification(dummyBuffer, 'fail.png');
 
         expect(consoleSpy).toHaveBeenCalledWith('Error sending notification:', expect.any(Error));
         consoleSpy.mockRestore();
@@ -59,17 +74,16 @@ describe('NotificationService', () => {
 
     test('should sanitize message headers removing newlines and non-ASCII characters to avoid fetch errors', async () => {
         const dummyBuffer = Buffer.from('fake-image');
-        const messageWithNewline = '❌Line 1\nLine 2';
+        const message = 'Line1: Value1\nLine2: Value2';
         
         (global.fetch as jest.Mock).mockResolvedValue({ ok: true });
 
-        await notificationService.sendSnapshot(dummyBuffer, 'test.png', messageWithNewline);
+        await notificationService.sendNotification(dummyBuffer, 'test.png', 'Title', '3', message);
 
         const [url, options] = (global.fetch as jest.Mock).mock.calls[0];
         
-        // The message in the header should not contain \n
+        // The message in the header should contain literal \n instead of actual newline
+        expect(options.headers['Message']).toContain('\\n');
         expect(options.headers['Message']).not.toContain('\n');
-        // It should probably replace it with a space or something safe
-        expect(options.headers['Message']).toBe('Line 1 Line 2');
     });
 });

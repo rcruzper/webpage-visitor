@@ -13,7 +13,7 @@ class NotificationService {
         this.password = config.ntfy.password;
     }
 
-    public async sendSnapshot(imageBuffer: Buffer, filename: string, message: string = 'Bot finished successfully', priority: string = '3'): Promise<void> {
+    public async sendNotification(imageBuffer: Buffer, filename: string, title: string = 'Bot - Finished successfully', priority: string = '3', message: string = ''): Promise<void> {
         if (!this.serverUrl || !this.topic) {
             console.log('Ntfy is not configured. Skipping notification.');
             return;
@@ -24,14 +24,14 @@ class NotificationService {
 
         try {
             // Sanitize message for HTTP headers:
-            // 1. Replace newlines with spaces (HTTP headers cannot contain newlines)
-            // 2. Remove non-ASCII characters (Node.js fetch is strict about ASCII headers)
+            // Node.js fetch/http throws if headers contain actual newlines (0x0A or 0x0D).
+            // We replace them with literal "\n" string which ntfy interprets as a newline.
             const safeMessage = message
-                .replace(/[\r\n]+/g, " ")   // Replace newlines with space
+                .replace(/\r?\n/g, '\\n') // Replace actual newlines with literal \n
                 .replace(/[^\x00-\x7F]/g, ""); // Remove non-ASCII (emojis, etc.)
 
             const headers: Record<string, string> = {
-                'Title': 'Webpage Visitor Report',
+                'Title': title,
                 'Priority': priority,
                 'Tags': 'robot',
                 'Filename': filename,

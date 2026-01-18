@@ -57,6 +57,47 @@ class NavigationService {
         }
     }
 
+    public async extractData(): Promise<string> {
+        const dataSelectors = this.config.dataSelectors;
+        const extractedData: Record<string, string> = {};
+
+        if (Object.keys(dataSelectors).length === 0) {
+            console.log('No data selectors defined. Skipping data extraction.');
+            return '';
+        }
+
+        console.log('Extracting data from page...');
+
+        for (const [key, selector] of Object.entries(dataSelectors)) {
+            try {
+                const element = await this.page.$(selector);
+                if (element) {
+                    const text = await this.page.evaluate(el => el.textContent?.trim() || '', element);
+                    extractedData[key] = text;
+                } else {
+                    console.warn(`Selector for ${key} not found: ${selector}`);
+                    extractedData[key] = 'Not found';
+                }
+            } catch (error: any) {
+                console.error(`Error extracting ${key}: ${error.message}`);
+                extractedData[key] = 'Error';
+            }
+        }
+
+        let message = '';
+        if (Object.keys(extractedData).length > 0) {
+            for (const [key, value] of Object.entries(extractedData)) {
+                message += `${key}: ${value}\n`;
+            }
+            // Remove the last newline character if it exists
+            if (message.endsWith('\n')) {
+                message = message.slice(0, -1);
+            }
+        }
+
+        return message;
+    }
+
     private getRandomInt(min: number, max: number): number {
         return Math.floor(Math.random() * (max - min + 1)) + min;
     }

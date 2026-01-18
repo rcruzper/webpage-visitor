@@ -32,6 +32,9 @@ export async function runBot() {
             console.log('Network busy, proceeding to screenshot anyway...');
         }
 
+        // Extract data
+        const extractedData = await navService.extractData();
+
         console.log('Taking a screenshot for verification...');
         const timestamp = new Date().toISOString().replace(/T/, '_').replace(/\..+/, '').replace(/:/g, '-');
         const filename = `login_success_${timestamp}.png`;
@@ -41,7 +44,7 @@ export async function runBot() {
         const imageBuffer = await page.screenshot({encoding: 'binary'}) as Buffer;
 
         // Send notification via Ntfy
-        await notificationService.sendSnapshot(imageBuffer, filename, 'Login successful. Action performed.');
+        await notificationService.sendNotification(imageBuffer, filename, 'Bot - Action performed.', '3', extractedData);
 
         console.log('Routine finished successfully.');
     } catch (error: any) {
@@ -58,7 +61,7 @@ export async function runBot() {
                     const errorImageBuffer = await page.screenshot({encoding: 'binary'}) as Buffer;
                     const timestamp = new Date().toISOString().replace(/T/, '_').replace(/\..+/, '').replace(/:/g, '-');
 
-                    await notificationService.sendSnapshot(errorImageBuffer, `error_${timestamp}.png`, `Bot FAILED. Reason: ${error.message}`, '5');
+                    await notificationService.sendNotification(errorImageBuffer, `error_${timestamp}.png`, `Bot - Action FAILED. Reason: ${error.message}`, '5');
                 }
             } catch (snapshotError) {
                 console.error('Could not capture error screenshot:', snapshotError);
